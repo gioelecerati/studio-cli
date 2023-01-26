@@ -435,20 +435,18 @@ pub fn get_ffmpeg_path() -> Result<String, String>{
         }
     }
 
-    #[cfg(target_os = "macos")]
+    #[cfg(target_os = "linux")]
     {
         let ffmpeg_path = which::which("ffmpeg");
         if ffmpeg_path.is_ok() {
             let path = ffmpeg_path.unwrap().to_str().unwrap().to_string();
-            let mut ffmpeg_path_ref = FFMPEG_PATH.lock().unwrap();
-            *ffmpeg_path_ref = Some(path.clone());
-            return format!("{}", path);
-        } else {
-            return no_ffmpeg_in_path;
+            return Ok(format!("{}", path));
+        }else{
+            return Err("No ffmpeg in path".to_string());
         }
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(target_os = "macos")]
     {
         let ffmpeg_path = which::which("ffmpeg");
         if ffmpeg_path.is_ok() {
