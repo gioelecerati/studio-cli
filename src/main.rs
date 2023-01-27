@@ -5,14 +5,14 @@
 #[macro_use]
 extern crate log;
 
-use console::Term;
 use colored::*;
+use console::Term;
 
 pub mod assets;
 pub mod auth;
+pub mod live;
 pub mod tasks;
 pub mod users;
-pub mod live;
 
 use env_logger::{filter::Filter, fmt::Color, Builder, Logger};
 
@@ -76,10 +76,9 @@ pub fn init() {
     init();
 }
 
-
 fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Users","Streams", "Assets", "Tasks", "<- Back"])
+        .items(&["Users", "Streams", "Assets", "Tasks", "<- Back"])
         .default(0)
         .interact_on_opt(&Term::stderr())
         .unwrap();

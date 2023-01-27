@@ -159,6 +159,7 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
 
 pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livepeer) {
     let a = task.unwrap();
+
     let asset = client
         .asset
         .get_asset_by_id(String::from(a["outputAssetId"].as_str().unwrap()));
@@ -178,6 +179,7 @@ pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livep
                 if let Ok(t) = asset {
                     let pretty_asset = serde_json::to_string_pretty(&t).unwrap();
                     println!("{}", pretty_asset);
+                    crate::assets::inspect_asset(Some(t), &client);
                 } else {
                     error!("Error getting asset: {:?}", asset);
                 }
@@ -213,11 +215,14 @@ pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer
     let mut task = client.task.get_task_by_id(String::from(task_id));
 
     let pb = indicatif::ProgressBar::new(100);
-    pb.set_style(indicatif::ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {msg}")
+    pb.set_style(
+        indicatif::ProgressStyle::with_template(
+            "{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {msg}",
+        )
         .unwrap()
-        .progress_chars("#>-"));
+        .progress_chars("#>-"),
+    );
     pb.enable_steady_tick(std::time::Duration::from_millis(120));
-
 
     loop {
         if let Ok(t) = task {

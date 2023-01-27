@@ -1,5 +1,5 @@
-use livepeer_rs::vod::{Task, Vod};
 use colored::*;
+use livepeer_rs::vod::{Task, Vod};
 
 pub mod upload;
 
@@ -8,7 +8,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
         .items(&[
             "My Assets",
             "Get Assets by User ID",
-            "Get Assets By ID",
+            "Get Asset By ID",
             "Upload Asset",
             "< Back",
         ])
@@ -172,7 +172,7 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
     println!("{}", pretty_asset);
 
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Get originating task", "< Back", "< Home", "Playback Asset"])
+        .items(&["Get originating task", "Playback Asset", "< Back", "< Home"])
         .default(0)
         .interact_on_opt(&crate::Term::stderr())
         .unwrap();
@@ -183,29 +183,40 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
                 if let Ok(t) = task {
                     let pretty_task = serde_json::to_string_pretty(&t).unwrap();
                     println!("{}", pretty_task);
+                    let single_task = t[0].clone();
+                    crate::tasks::inspect_task(Some(single_task), client);
                 } else {
                     info!("Error getting task: {:?}", task);
                 }
             }
-            if index == 1 {
+            if index == 2 {
                 assets(client);
             }
 
-            if index == 2 {
+            if index == 3 {
                 crate::list_options(&client);
                 std::process::exit(0);
             }
 
-            if index == 3 {
+            if index == 1 {
                 // run command ffplay with playbackURL
                 let playback_url = a["playbackUrl"].as_str();
+
+                let ffplay_path = crate::live::get_ffplay_path();
+
+                if ffplay_path.is_err() {
+                    error!("ffplay not found");
+                    assets(client);
+                }
+
+                let ffplay = ffplay_path.unwrap();
 
                 match playback_url {
                     Some(url) => {
                         info!("Playback URL: {}", url);
                         info!("Playing asset...");
                         info!("Wait for ffplay to load...");
-                        let output = std::process::Command::new("ffplay")
+                        let output = std::process::Command::new(ffplay)
                             .arg(url)
                             .output()
                             .expect("failed to execute process");

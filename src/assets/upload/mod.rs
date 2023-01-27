@@ -212,7 +212,7 @@ pub fn list_files_and_folders(path: &String) -> Vec<String> {
             ];
 
             // if file has extension
-            
+
             let extension = path.extension();
 
             println!("Extension: {:?}", extension);
@@ -237,7 +237,6 @@ pub fn list_files_and_folders(path: &String) -> Vec<String> {
                 continue;
             }
 
-            
             files.push(path_string);
         }
     }

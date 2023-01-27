@@ -1,23 +1,14 @@
-use livepeer_rs::vod::{Task, Vod};
 use colored::*;
+use livepeer_rs::vod::{Task, Vod};
 
-const REGIONS: &'static [&'static str] = &[
-    "fra",
-    "prg",
-    "nyc",
-    "lon",
-    "lax",
-    "mdw",
-    "sin",
-    "sao",
-];
+const REGIONS: &'static [&'static str] = &["fra", "prg", "nyc", "lon", "lax", "mdw", "sin", "sao"];
 
 pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&[
             "My Streams",
             "Get Streams by User ID",
-            "Get Streams By ID",
+            "Get Stream By ID",
             "Create Stream",
             "< Back",
         ])
@@ -64,7 +55,10 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
                     .with_prompt("Enter stream ID")
                     .interact()
                     .unwrap();
-                let single_stream = client.stream.clone().get_stream_by_id(String::from(stream_id));
+                let single_stream = client
+                    .stream
+                    .clone()
+                    .get_stream_by_id(String::from(stream_id));
                 if let Ok(a) = single_stream {
                     stream = Some(a);
                 } else {
@@ -85,15 +79,18 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
                     .interact()
                     .unwrap();
 
-                client.stream.clone().create_stream(&name, &vec![livepeer_rs::data::stream::Profile{
-                    bitrate: 250000,
-                    fps: 0,
-                    height: 240,
-                    name: String::from("240p0"),
-                    width: 426,
-                    gop: None,
-                  }]);
-                
+                client.stream.clone().create_stream(
+                    &name,
+                    &vec![livepeer_rs::data::stream::Profile {
+                        bitrate: 250000,
+                        fps: 0,
+                        height: 240,
+                        name: String::from("240p0"),
+                        width: 426,
+                        gop: None,
+                    }],
+                );
+
                 streams(client);
                 std::process::exit(0);
             }
@@ -138,11 +135,9 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
                                     x.name,
                                     x.playback_id.clone(),
                                     x.is_active
-                                
                                 )
                             })
                             .collect::<Vec<String>>();
-                            
 
                         let selection = dialoguer::Select::with_theme(
                             &dialoguer::theme::ColorfulTheme::default(),
@@ -155,7 +150,8 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
                         match selection {
                             Some(index) => {
                                 let id = list[index].id.clone();
-                                let stream_value = client.stream.clone().get_stream_by_id(String::from(id));
+                                let stream_value =
+                                    client.stream.clone().get_stream_by_id(String::from(id));
 
                                 if let Ok(a) = stream_value {
                                     stream = Some(a);
@@ -199,14 +195,22 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
     println!("{}", pretty_asset);
 
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["< Back", "< Home", "Playback Stream" ,"Change policy", "Push", "Test Push into Region", "Get running push", "Test on all regions"])
+        .items(&[
+            "< Back",
+            "< Home",
+            "Playback Stream",
+            "Change policy",
+            "Push",
+            "Test Push into Region",
+            "Get running push",
+            "Test on all regions",
+        ])
         .default(0)
         .interact_on_opt(&crate::Term::stderr())
         .unwrap();
 
     match selection {
         Some(index) => {
-
             if index == 0 {
                 streams(client);
             }
@@ -261,9 +265,13 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                 let stream = a.clone();
                 if let Ok(ffp) = ffmpeg_path {
                     //std::thread::spawn(move || {
-                        stream_client
-                            .rtmp
-                            .push_to_region(&stream["streamKey"].to_string().replace("\"",""), &file_to_push.to_string(), &String::from(REGIONS[0]), &ffp, &mut Some(stream["playbackId"].to_string().replace('"',"")));
+                    stream_client.rtmp.push_to_region(
+                        &stream["streamKey"].to_string().replace("\"", ""),
+                        &file_to_push.to_string(),
+                        &String::from(REGIONS[0]),
+                        &ffp,
+                        &mut Some(stream["playbackId"].to_string().replace('"', "")),
+                    );
                     //});
                     streams(client);
                 } else {
@@ -275,13 +283,12 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
             if index == 5 {
                 // print todo
                 // test single region
-                let index = dialoguer::Select::with_theme(
-                    &dialoguer::theme::ColorfulTheme::default(),
-                )
-                .items(&REGIONS)
-                .default(0)
-                .interact_on_opt(&crate::Term::stderr())
-                .unwrap();
+                let index =
+                    dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
+                        .items(&REGIONS)
+                        .default(0)
+                        .interact_on_opt(&crate::Term::stderr())
+                        .unwrap();
 
                 let region_vec = REGIONS.to_vec();
 
@@ -302,9 +309,13 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                 let stream = a.clone();
 
                 if let Ok(ffp) = ffmpeg_path.clone() {
-                    let push = stream_client
-                        .rtmp
-                        .push_to_region(&stream["streamKey"].to_string().replace("\"",""), &file_to_push.to_string(), &region_selected.to_string(), &ffp, &mut Some(stream["playbackId"].to_string().replace('"',"")));
+                    let push = stream_client.rtmp.push_to_region(
+                        &stream["streamKey"].to_string().replace("\"", ""),
+                        &file_to_push.to_string(),
+                        &region_selected.to_string(),
+                        &ffp,
+                        &mut Some(stream["playbackId"].to_string().replace('"', "")),
+                    );
 
                     if let Ok(e) = push {
                         info!("Push to region {} successful", region_selected);
@@ -315,19 +326,17 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
 
                     // sleep 3 seconds
                     std::thread::sleep(std::time::Duration::from_secs(3));
-                
-            } else {
-                error!("FFMPEG not found");
-                streams(client);
-            }
-
+                } else {
+                    error!("FFMPEG not found");
+                    streams(client);
+                }
 
                 streams(client);
             }
 
             if index == 6 {
                 // print todo
-                find_threads(&a["playbackId"].to_string().replace('"',""));
+                find_threads(&a["playbackId"].to_string().replace('"', ""));
                 streams(client);
             }
 
@@ -348,20 +357,23 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                 for region in REGIONS {
                     info!("Testing region: {}", region);
                     if let Ok(ffp) = ffmpeg_path.clone() {
-                            let push = stream_client
-                                .rtmp
-                                .push_to_region(&stream["streamKey"].to_string().replace("\"",""), &file_to_push.to_string(), &region.to_string(), &ffp, &mut Some(stream["playbackId"].to_string().replace('"',"")));
+                        let push = stream_client.rtmp.push_to_region(
+                            &stream["streamKey"].to_string().replace("\"", ""),
+                            &file_to_push.to_string(),
+                            &region.to_string(),
+                            &ffp,
+                            &mut Some(stream["playbackId"].to_string().replace('"', "")),
+                        );
 
-                            if let Ok(e) = push {
-                                info!("Push to region {} successful", region);
-                            } else {
-                                error!("Push to region {} failed", region);
-                                error!("Status: {:?}", push);
-                            }
+                        if let Ok(e) = push {
+                            info!("Push to region {} successful", region);
+                        } else {
+                            error!("Push to region {} failed", region);
+                            error!("Status: {:?}", push);
+                        }
 
-                            // sleep 3 seconds
-                            std::thread::sleep(std::time::Duration::from_secs(3));
-                        
+                        // sleep 3 seconds
+                        std::thread::sleep(std::time::Duration::from_secs(3));
                     } else {
                         error!("FFMPEG not found");
                         streams(client);
@@ -380,10 +392,10 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
 pub fn get_file_to_push(current_folder_string: &String) -> String {
     let files = crate::assets::upload::list_files_and_folders(&current_folder_string);
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-                    .items(&files)
-                    .default(0)
-                    .interact_on_opt(&crate::Term::stderr())
-                    .unwrap();
+        .items(&files)
+        .default(0)
+        .interact_on_opt(&crate::Term::stderr())
+        .unwrap();
     match selection {
         // Match selection
         // If selected path is 0 (..), use the parent folder as work dir and call list_files again
@@ -397,11 +409,11 @@ pub fn get_file_to_push(current_folder_string: &String) -> String {
                     .to_str()
                     .unwrap()
                     .to_string();
-                return get_file_to_push( &parent_folder);
+                return get_file_to_push(&parent_folder);
             } else {
                 if files[index].ends_with("/") {
                     let new_folder = files[index].clone();
-                    return get_file_to_push( &new_folder);
+                    return get_file_to_push(&new_folder);
                 } else {
                     let path_of_file = &files[index];
                     let file_name = std::path::Path::new(path_of_file)
@@ -409,19 +421,19 @@ pub fn get_file_to_push(current_folder_string: &String) -> String {
                         .unwrap()
                         .to_str()
                         .unwrap()
-                        .to_string(); 
+                        .to_string();
                     return path_of_file.to_string();
                 }
             }
         }
         None => {
             error!("No selection made, going back");
-            return String::from("/tmp/video.mp4")
+            return String::from("/tmp/video.mp4");
         }
     }
 }
 
-pub fn get_ffmpeg_path() -> Result<String, String>{
+pub fn get_ffmpeg_path() -> Result<String, String> {
     #[cfg(target_os = "windows")]
     {
         let ffmpeg_path = which::which("ffmpeg");
@@ -441,7 +453,7 @@ pub fn get_ffmpeg_path() -> Result<String, String>{
         if ffmpeg_path.is_ok() {
             let path = ffmpeg_path.unwrap().to_str().unwrap().to_string();
             return Ok(format!("{}", path));
-        }else{
+        } else {
             return Err("No ffmpeg in path".to_string());
         }
     }
@@ -452,8 +464,43 @@ pub fn get_ffmpeg_path() -> Result<String, String>{
         if ffmpeg_path.is_ok() {
             let path = ffmpeg_path.unwrap().to_str().unwrap().to_string();
             return Ok(format!("{}", path));
-        }else{
+        } else {
             return Err("No ffmpeg in path".to_string());
+        }
+    }
+}
+
+pub fn get_ffplay_path() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        let ffplay_path = which::which("ffplay");
+        if ffplay_path.is_ok() {
+            let path = ffplay_path.unwrap().to_str().unwrap().to_string();
+            return Ok(format!("{}", path));
+        } else {
+            return Err("No ffplay in path".to_string());
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let ffplay_path = which::which("ffplay");
+        if ffplay_path.is_ok() {
+            let path = ffplay_path.unwrap().to_str().unwrap().to_string();
+            return Ok(format!("{}", path));
+        } else {
+            return Err("No ffplay in path".to_string());
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let ffplay_path = which::which("ffplay");
+        if ffplay_path.is_ok() {
+            let path = ffplay_path.unwrap().to_str().unwrap().to_string();
+            return Ok(format!("{}", path));
+        } else {
+            return Err("No ffplay in path".to_string());
         }
     }
 }
