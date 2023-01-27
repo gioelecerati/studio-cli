@@ -99,7 +99,7 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
             }
 
             if index == 4 {
-                crate::init();
+                crate::list_options(&client);
                 std::process::exit(0);
             }
 
@@ -212,7 +212,7 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
             }
 
             if index == 1 {
-                crate::init();
+                crate::list_options(&client);
                 std::process::exit(0);
             }
 

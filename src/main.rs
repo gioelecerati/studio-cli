@@ -71,8 +71,15 @@ pub fn init() {
 
     // select functionality {assets, streams, users}
 
+    list_options(&lvpr_client);
+
+    init();
+}
+
+
+fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Users","Streams", "Assets", "Tasks"])
+        .items(&["Users","Streams", "Assets", "Tasks", "<- Back"])
         .default(0)
         .interact_on_opt(&Term::stderr())
         .unwrap();
@@ -94,11 +101,14 @@ pub fn init() {
             if index == 3 {
                 tasks::tasks(&lvpr_client);
             }
+
+            if index == 4 {
+                crate::init();
+                std::process::exit(0);
+            }
         }
         None => {
             info!("No selection made");
         }
     }
-
-    init();
 }

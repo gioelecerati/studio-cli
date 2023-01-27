@@ -70,7 +70,7 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
             }
 
             if index == 3 {
-                crate::init();
+                crate::list_options(&client);
                 std::process::exit(0);
             }
 
@@ -135,6 +135,11 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
                             }
                         }
                     }
+
+                    if i == 2 {
+                        tasks(&client);
+                        std::process::exit(0);
+                    }
                 }
                 None => {
                     error!("No selection made");
@@ -187,7 +192,7 @@ pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livep
             }
 
             if index == 3 {
-                crate::init();
+                crate::list_options(&client);
                 std::process::exit(0);
             }
         }

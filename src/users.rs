@@ -33,7 +33,7 @@ pub fn users(client: &livepeer_rs::Livepeer) {
             }
 
             if index == 2 {
-                crate::init();
+                crate::list_options(&client);
                 std::process::exit(0);
             }
         }
