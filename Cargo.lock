@@ -994,6 +994,7 @@ dependencies = [
 [[package]]
 name = "livepeer-rs"
 version = "0.0.1"
+source = "git+https://github.com/gioelecerati/livepeer-rust-client#6e0b7ae59753bc8dce77721be7f422f49c390ecb"
 dependencies = [
  "async-std",
  "colored",
