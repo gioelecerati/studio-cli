@@ -20,11 +20,19 @@ cp ./target/release/studio /usr/local/bin/studio
 studio 
 ```
 
+or 
+
+```bash
+cargo run
+```
+
 ## Features
 - List Streams, Assets, Tasks
 - Create Streams
 - Upload Assets
+- Get playback info
 - Playback Assets (ffplay required)
+- Playback asset rendition (ffplay required)
 - Push into regions (ffmpeg required)
 - Track task status
 - Admin functionalities (using admin token)
