@@ -259,7 +259,8 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                     .unwrap()
                     .to_string();
 
-                let files = crate::assets::upload::list_files_and_folders(&current_folder_string);
+                let files =
+                    crate::assets::upload::list_files_and_folders(&current_folder_string, None);
 
                 let file_to_push = get_file_to_push(&current_folder_string);
                 let stream = a.clone();
@@ -303,7 +304,8 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                     .unwrap()
                     .to_string();
 
-                let files = crate::assets::upload::list_files_and_folders(&current_folder_string);
+                let files =
+                    crate::assets::upload::list_files_and_folders(&current_folder_string, None);
 
                 let file_to_push = get_file_to_push(&current_folder_string);
                 let stream = a.clone();
@@ -350,7 +352,8 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                     .unwrap()
                     .to_string();
 
-                let files = crate::assets::upload::list_files_and_folders(&current_folder_string);
+                let files =
+                    crate::assets::upload::list_files_and_folders(&current_folder_string, None);
 
                 let file_to_push = get_file_to_push(&current_folder_string);
                 let stream = a.clone();
@@ -390,7 +393,7 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
 }
 
 pub fn get_file_to_push(current_folder_string: &String) -> String {
-    let files = crate::assets::upload::list_files_and_folders(&current_folder_string);
+    let files = crate::assets::upload::list_files_and_folders(&current_folder_string, None);
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&files)
         .default(0)

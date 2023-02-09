@@ -159,3 +159,37 @@ pub fn save_api_key_to_disk(
 
     info!("Api key saved to disk {}", path.join(filename).display());
 }
+
+pub fn save_string_to_disk(env: &String, filename: &String, content: &String) {
+    let home = dirs::home_dir().unwrap();
+    let p = home.join(".studio");
+    let path = p.join(env);
+
+    let save_path = path.join(filename);
+    if !path.exists() {
+        std::fs::create_dir(path.clone()).unwrap();
+    }
+    let mut file = std::fs::File::create(save_path).unwrap();
+    file.write_all(content.as_bytes()).unwrap();
+
+    info!("File saved to disk {}", path.join(filename).display());
+}
+
+pub fn get_string_from_disk(env: &String, filename: &String) -> Option<String> {
+    let home = dirs::home_dir().unwrap();
+    let p = home.join(".studio");
+    let path = p.join(env);
+
+    let mut f = std::fs::File::open(path.join(filename));
+
+    if f.is_err() {
+        return None;
+    }
+    let mut file = f.unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+
+    info!("File loaded from disk {}", path.join(filename).display());
+
+    return Some(contents);
+}

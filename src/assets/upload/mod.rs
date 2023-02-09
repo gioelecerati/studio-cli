@@ -80,7 +80,14 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) {
 }
 
 pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String, resumable: bool) {
-    let files = list_files_and_folders(current_folder_string);
+    // read from disk recent-uploads
+    let recent_string =
+        crate::auth::get_string_from_disk(&String::from("recent"), &String::from("uploads"));
+    let mut recents = None;
+    if recent_string.is_some() {
+        recents = Some(recent_string.unwrap());
+    }
+    let files = list_files_and_folders(current_folder_string, recents);
 
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&files)
@@ -107,13 +114,23 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
                     let new_folder = files[index].clone();
                     do_upload(client, &new_folder, resumable);
                 } else {
-                    let path_of_file = &files[index];
+                    let mut path_of_file = &files[index];
                     let file_name = std::path::Path::new(path_of_file)
                         .file_name()
                         .unwrap()
                         .to_str()
                         .unwrap()
                         .to_string();
+
+                    let path_of_file = &path_of_file.replace("<RECENT> ", "").clone();
+
+                    let recent_file_name = format!("<RECENT> {}", path_of_file);
+
+                    crate::auth::save_string_to_disk(
+                        &String::from("recent"),
+                        &String::from("uploads"),
+                        &recent_file_name,
+                    );
 
                     // Ask a name for the asset
                     let mut asset_name = dialoguer::Input::<String>::new()
@@ -193,7 +210,7 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
     }
 }
 
-pub fn list_files_and_folders(path: &String) -> Vec<String> {
+pub fn list_files_and_folders(path: &String, recents: Option<String>) -> Vec<String> {
     let mut files = vec![];
 
     // get all files and folders. if folder, add "/" to end
@@ -261,6 +278,11 @@ pub fn list_files_and_folders(path: &String) -> Vec<String> {
 
     // Put .. at the top
     files.insert(0, String::from(".."));
+
+    if recents.is_some() {
+        let recent = recents.unwrap();
+        files.insert(1, recent);
+    }
 
     return files;
 }
