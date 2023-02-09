@@ -11,6 +11,7 @@ use console::Term;
 pub mod assets;
 pub mod auth;
 pub mod live;
+pub mod playback;
 pub mod tasks;
 pub mod users;
 

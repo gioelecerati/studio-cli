@@ -1,5 +1,8 @@
 use colored::*;
-use livepeer_rs::vod::{Task, Vod};
+use livepeer_rs::{
+    playback::Playback,
+    vod::{Task, Vod},
+};
 
 pub mod upload;
 
@@ -172,7 +175,14 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
     println!("{}", pretty_asset);
 
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Get originating task", "Playback Asset", "< Back", "< Home"])
+        .items(&[
+            "Retrieve again",
+            "Get originating task",
+            "Playback Asset",
+            "Get playback info",
+            "< Back",
+            "< Home",
+        ])
         .default(0)
         .interact_on_opt(&crate::Term::stderr())
         .unwrap();
@@ -180,6 +190,11 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
     match selection {
         Some(index) => {
             if index == 0 {
+                inspect_asset(Some(a.clone()), client);
+                assets(client);
+            }
+
+            if index == 1 {
                 if let Ok(t) = task {
                     let pretty_task = serde_json::to_string_pretty(&t).unwrap();
                     println!("{}", pretty_task);
@@ -189,16 +204,30 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
                     info!("Error getting task: {:?}", task);
                 }
             }
-            if index == 2 {
+
+            if index == 3 {
+                let playback_info = client
+                    .playback
+                    .get_playback_info(&String::from(a["playbackId"].as_str().unwrap()));
+                if let Ok(p) = playback_info {
+                    let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
+                    println!("{}", pretty_playback_info);
+                    crate::playback::playback(p, &client);
+                } else {
+                    error!("Error getting playback info: {:?}", playback_info);
+                }
+            }
+
+            if index == 4 {
                 assets(client);
             }
 
-            if index == 3 {
+            if index == 5 {
                 crate::list_options(&client);
                 std::process::exit(0);
             }
 
-            if index == 1 {
+            if index == 2 {
                 // run command ffplay with playbackURL
                 let playback_url = a["playbackUrl"].as_str();
 
