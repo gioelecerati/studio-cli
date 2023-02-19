@@ -2,7 +2,13 @@ use livepeer_rs::vod::Vod;
 
 pub mod resumable;
 
-pub fn upload_asset(client: &livepeer_rs::Livepeer) {
+pub struct UploadAssetResult {
+    pub asset_id: String,
+    pub task_id: String,
+}
+
+pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
+    let mut asset_id = None;
     // Choose type of upload
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&["Upload from URL", "Upload from File", "< Back"])
@@ -13,10 +19,10 @@ pub fn upload_asset(client: &livepeer_rs::Livepeer) {
     match selection {
         Some(index) => {
             if index == 0 {
-                upload_from_url(client);
+                asset_id = upload_from_url(client);
             }
             if index == 1 {
-                upload_from_file(client);
+                asset_id = upload_from_file(client);
             }
             if index == 2 {
                 super::assets(client);
@@ -26,9 +32,11 @@ pub fn upload_asset(client: &livepeer_rs::Livepeer) {
             error!("No selection made, going back");
         }
     }
+    return asset_id
 }
 
-pub fn upload_from_url(client: &livepeer_rs::Livepeer) {
+pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
+    let mut result = None;
     let url = dialoguer::Input::<String>::new()
         .with_prompt("Enter URL")
         .interact()
@@ -43,14 +51,21 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) {
     let up_result = client.asset.import_asset(url, asset_name);
 
     if let Ok(a) = up_result {
+        let asset_id = Some(a["asset"]["id"].as_str().unwrap().to_string());
+        let task_id = Some(a["task"]["id"].as_str().unwrap().to_string());
+        result = Some(UploadAssetResult {
+            asset_id: asset_id.unwrap(),
+            task_id: task_id.unwrap(),
+        });
         println!("Asset uploaded: {:?}", a);
     } else {
         error!("Error uploading asset: {:?}", up_result);
     }
-    super::assets(client);
+    return result
 }
 
-pub fn upload_from_file(client: &livepeer_rs::Livepeer) {
+pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
+    let mut asset_id = None;
     // Choose between direct and resumable upload
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&["Direct Upload", "Resumable Upload", "< Back"])
@@ -66,7 +81,7 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) {
                     .to_str()
                     .unwrap()
                     .to_string();
-                do_upload(client, &current_folder_string, false);
+                asset_id = do_upload(client, &current_folder_string, false);
             }
             if index == 1 {
                 println!("Not implemented yet, use direct uploads for now");
@@ -79,10 +94,12 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) {
             error!("No selection made, going back");
         }
     }
+    return asset_id
 }
 
-pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String, resumable: bool) {
+pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String, resumable: bool) -> Option<UploadAssetResult>{
     // read from disk recent-uploads
+    let mut result = None;
     let recent_string =
         crate::auth::get_string_from_disk(&String::from("recent"), &String::from("uploads"));
     let mut recents = None;
@@ -191,13 +208,18 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
 
                             match up_result {
                                 Ok(_) => {
+                                    let asset_id = urls["asset"]["id"].as_str().unwrap().to_string();
+                                    let task_id = urls["task"]["id"].as_str().unwrap().to_string();
+                                    result = Some(UploadAssetResult{
+                                        asset_id,
+                                        task_id
+                                    });
                                     println!("Upload successful");
                                 }
                                 Err(e) => {
                                     error!("Error: {:?}", e);
                                 }
                             }
-                            super::assets(client);
                         }
                         Err(e) => {
                             error!("Error: {:?}", e);
@@ -210,6 +232,7 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
             error!("No selection made, going back");
         }
     }
+    return result;
 }
 
 pub fn list_files_and_folders(path: &String, recents: Option<String>) -> Vec<String> {

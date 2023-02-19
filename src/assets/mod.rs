@@ -73,7 +73,8 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
 
             if index == 3 {
                 // Trigger upload function
-                upload::upload_asset(client);
+                upload::upload_asset(client).unwrap();
+                assets(client);
                 return false;
             }
 
