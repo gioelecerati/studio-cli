@@ -1,14 +1,13 @@
 use livepeer_rs::vod::Vod;
 
 pub mod resumable;
-
 pub struct UploadAssetResult {
     pub asset_id: String,
     pub task_id: String,
 }
 
 pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
-    let mut asset_id = None;
+    let mut result = None;
     // Choose type of upload
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&["Upload from URL", "Upload from File", "< Back"])
@@ -19,10 +18,10 @@ pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult>
     match selection {
         Some(index) => {
             if index == 0 {
-                asset_id = upload_from_url(client);
+                result = upload_from_url(client);
             }
             if index == 1 {
-                asset_id = upload_from_file(client);
+                result = upload_from_file(client);
             }
             if index == 2 {
                 super::assets(client);
@@ -32,7 +31,7 @@ pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult>
             error!("No selection made, going back");
         }
     }
-    return asset_id
+    return result
 }
 
 pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
@@ -65,7 +64,7 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResu
 }
 
 pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
-    let mut asset_id = None;
+    let mut result = None;
     // Choose between direct and resumable upload
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&["Direct Upload", "Resumable Upload", "< Back"])
@@ -81,7 +80,7 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetRes
                     .to_str()
                     .unwrap()
                     .to_string();
-                asset_id = do_upload(client, &current_folder_string, false);
+                result = do_upload(client, &current_folder_string, false);
             }
             if index == 1 {
                 println!("Not implemented yet, use direct uploads for now");
@@ -94,7 +93,7 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetRes
             error!("No selection made, going back");
         }
     }
-    return asset_id
+    return result
 }
 
 pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String, resumable: bool) -> Option<UploadAssetResult>{

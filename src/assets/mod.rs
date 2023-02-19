@@ -13,6 +13,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             "Get Assets by User ID",
             "Get Asset By ID",
             "Upload Asset",
+            "Test",
             "< Back",
         ])
         .default(0)
@@ -79,6 +80,30 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             }
 
             if index == 4 {
+                let current_folder_string = std::env::current_dir()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                let result = upload::do_upload(client, &current_folder_string, false);
+                if !result.is_some(){
+                    println!("❌ - Error uploading asset");
+                    return false;
+                }
+                println!("✅ - Asset upload");
+                let res = result.unwrap();
+                let asset_id = res.asset_id;
+                let task_id = res.task_id;
+                
+                let task_result = super::tasks::track_task_status(serde_json::from_str(&format!("{}{}{}",r#"{"id":""#,task_id,r#""}"#)).unwrap(),client);
+                if !task_result {
+                    println!("❌ - Task failed");
+                    return false;
+                }
+                println!("✅ - Task completed");
+            }
+
+            if index == 5 {
                 crate::list_options(&client);
                 std::process::exit(0);
             }

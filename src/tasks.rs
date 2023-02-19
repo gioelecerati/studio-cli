@@ -206,11 +206,11 @@ pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livep
 
 use std::{cmp::min, fmt::Write};
 
-pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer) {
+pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer) -> bool {
     // Get task.id, then get task from livepeer client and check status.phase and status.progress
     // Spawn a indicatif progress bar and update it with the progress value
     // Stay in this function until status.phase is "completed" or "failed" & then return to tasks menu
-
+    let mut result = false;
     let task_id = task["id"].as_str().unwrap();
     let mut task = client.task.get_task_by_id(String::from(task_id));
 
@@ -240,11 +240,13 @@ pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer
                 None => {
                     if phase == "completed" || phase == "failed" {
                         pb.finish();
+                        if phase == "completed" {
+                            result = true;
+                        }
                         break;
                     }
 
                     debug!("No progress value found");
-
                     std::thread::sleep(std::time::Duration::from_secs(3));
                 }
             }
@@ -267,4 +269,5 @@ pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer
         // sleep 3 seconds
         std::thread::sleep(std::time::Duration::from_secs(3));
     }
+    return result
 }
