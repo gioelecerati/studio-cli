@@ -68,7 +68,9 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) {
                     .to_string();
                 do_upload(client, &current_folder_string, false);
             }
-            if index == 1 {}
+            if index == 1 {
+                println!("Not implemented yet, use direct uploads for now");
+            }
             if index == 2 {
                 upload_asset(client);
             }
