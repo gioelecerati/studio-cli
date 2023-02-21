@@ -13,7 +13,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             "Get Assets by User ID",
             "Get Asset By ID",
             "Upload Asset",
-            "Test",
+            "Test (Upload -> Task -> Playback -> Export to IPFS)",
             "< Back",
         ])
         .default(0)
@@ -91,9 +91,11 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                     return false;
                 }
                 println!("✅ - Asset upload");
+                println!("Polling task progress...");
                 let res = result.unwrap();
                 let asset_id = res.asset_id;
                 let task_id = res.task_id;
+                let playback_id = res.playback_id;
                 
                 let task_result = super::tasks::track_task_status(serde_json::from_str(&format!("{}{}{}",r#"{"id":""#,task_id,r#""}"#)).unwrap(),client);
                 if !task_result {
@@ -101,6 +103,21 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                     return false;
                 }
                 println!("✅ - Task completed");
+                let playback_info = client
+                    .playback
+                    .get_playback_info(&playback_id);
+                if !playback_info.is_ok() {
+                    println!("❌ - Error getting playback info");
+                    return false;
+                }
+                println!("✅ - Got playback info");
+                let export_result = client.asset.export_to_ipfs(asset_id, String::from("{}"));
+                if !export_result.is_ok() {
+                    println!("❌ - Error exporting to ipfs");
+                    return false;
+                }
+                println!("✅ - Exported to ipfs");
+                assets(client);
             }
 
             if index == 5 {
@@ -206,6 +223,7 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
             "Get originating task",
             "Playback Asset",
             "Get playback info",
+            "Export to IPFS",
             "< Back",
             "< Home",
         ])
@@ -245,10 +263,23 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
             }
 
             if index == 4 {
-                assets(client);
+                let export_result = client.asset.export_to_ipfs(
+                    String::from(a["id"].as_str().unwrap()),
+                    String::from("{}"),
+                );
+                if let Ok(e) = export_result {
+                    let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
+                    println!("{}", pretty_export_result);
+                } else {
+                    error!("Error exporting to ipfs: {:?}", export_result);
+                }
             }
 
             if index == 5 {
+                assets(client);
+            }
+
+            if index == 6 {
                 crate::list_options(&client);
                 std::process::exit(0);
             }

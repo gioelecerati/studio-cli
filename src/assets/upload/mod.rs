@@ -4,6 +4,7 @@ pub mod resumable;
 pub struct UploadAssetResult {
     pub asset_id: String,
     pub task_id: String,
+    pub playback_id: String,
 }
 
 pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
@@ -52,9 +53,11 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResu
     if let Ok(a) = up_result {
         let asset_id = Some(a["asset"]["id"].as_str().unwrap().to_string());
         let task_id = Some(a["task"]["id"].as_str().unwrap().to_string());
+        let playback_id =  Some(a["asset"]["playbackId"].as_str().unwrap().to_string());
         result = Some(UploadAssetResult {
             asset_id: asset_id.unwrap(),
             task_id: task_id.unwrap(),
+            playback_id: playback_id.unwrap(),
         });
         println!("Asset uploaded: {:?}", a);
     } else {
@@ -209,11 +212,13 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
                                 Ok(_) => {
                                     let asset_id = urls["asset"]["id"].as_str().unwrap().to_string();
                                     let task_id = urls["task"]["id"].as_str().unwrap().to_string();
+                                    let playback_id = urls["asset"]["playbackId"].as_str().unwrap().to_string();
                                     result = Some(UploadAssetResult{
                                         asset_id,
-                                        task_id
+                                        task_id,
+                                        playback_id
                                     });
-                                    println!("Upload successful");
+                                    info!("Upload successful");
                                 }
                                 Err(e) => {
                                     error!("Error: {:?}", e);

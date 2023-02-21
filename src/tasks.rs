@@ -102,9 +102,10 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
                             .iter()
                             .map(|x| {
                                 format!(
-                                    "{} - {}",
+                                    "{} - {} - {}",
                                     x["id"].as_str().unwrap(),
-                                    x["status"]["phase"].as_str().unwrap()
+                                    x["status"]["phase"].as_str().unwrap(),
+                                    x["type"].as_str().unwrap(),
                                 )
                             })
                             .collect::<Vec<String>>();
@@ -160,12 +161,15 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
 pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livepeer) {
     let a = task.unwrap();
 
+    if a["type"] != "upload" {
+        let pretty_task = serde_json::to_string_pretty(&a).unwrap();
+        println!("{}", pretty_task);
+        tasks(client);
+    }
+
     let asset = client
         .asset
         .get_asset_by_id(String::from(a["outputAssetId"].as_str().unwrap()));
-
-    let pretty_task = serde_json::to_string_pretty(&a).unwrap();
-    println!("{}", pretty_task);
 
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&["Get output asset", "Track task status", "< Back", "< Home"])
