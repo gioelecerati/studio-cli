@@ -23,6 +23,19 @@ fn main() {
 }
 
 pub fn init() {
+    println!(
+        "{}",
+        r#"
+            __            ___                  ___
+      _____/ /___  ______/ (_)___        _____/ (_)
+     / ___/ __/ / / / __  / / __ \______/ ___/ / /
+    (__  ) /_/ /_/ / /_/ / / /_/ /_____/ /__/ / /
+   /____/\__/\__,_/\__,_/_/\____/      \___/_/_/
+        v0.1.1
+    "#
+        .green()
+    );
+
     let items = vec!["Prod", "Stg"];
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&items)
