@@ -273,5 +273,5 @@ pub fn track_task_status(task: serde_json::Value, client: &livepeer_rs::Livepeer
         // sleep 3 seconds
         std::thread::sleep(std::time::Duration::from_secs(3));
     }
-    return result
+    return result;
 }

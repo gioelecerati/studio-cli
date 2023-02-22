@@ -80,43 +80,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             }
 
             if index == 4 {
-                let current_folder_string = std::env::current_dir()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string();
-                let result = upload::do_upload(client, &current_folder_string, false);
-                if !result.is_some(){
-                    println!("❌ - Error uploading asset");
-                    return false;
-                }
-                println!("✅ - Asset upload");
-                println!("Polling task progress...");
-                let res = result.unwrap();
-                let asset_id = res.asset_id;
-                let task_id = res.task_id;
-                let playback_id = res.playback_id;
-                
-                let task_result = super::tasks::track_task_status(serde_json::from_str(&format!("{}{}{}",r#"{"id":""#,task_id,r#""}"#)).unwrap(),client);
-                if !task_result {
-                    println!("❌ - Task failed");
-                    return false;
-                }
-                println!("✅ - Task completed");
-                let playback_info = client
-                    .playback
-                    .get_playback_info(&playback_id);
-                if !playback_info.is_ok() {
-                    println!("❌ - Error getting playback info");
-                    return false;
-                }
-                println!("✅ - Got playback info");
-                let export_result = client.asset.export_to_ipfs(asset_id, String::from("{}"));
-                if !export_result.is_ok() {
-                    println!("❌ - Error exporting to ipfs");
-                    return false;
-                }
-                println!("✅ - Exported to ipfs");
+                let asset_test = test_asset_flow(client);
                 assets(client);
             }
 
@@ -263,10 +227,9 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
             }
 
             if index == 4 {
-                let export_result = client.asset.export_to_ipfs(
-                    String::from(a["id"].as_str().unwrap()),
-                    String::from("{}"),
-                );
+                let export_result = client
+                    .asset
+                    .export_to_ipfs(String::from(a["id"].as_str().unwrap()), String::from("{}"));
                 if let Ok(e) = export_result {
                     let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
                     println!("{}", pretty_export_result);
@@ -320,4 +283,48 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
             error!("No selection made");
         }
     }
+}
+
+pub fn test_asset_flow(client: &livepeer_rs::Livepeer) -> bool {
+    info!("Running asset flow test...");
+    let current_folder_string = std::env::current_dir()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+    let result = upload::do_upload(client, &current_folder_string, false);
+    if !result.is_some() {
+        println!("❌ - Error uploading asset");
+        return false;
+    }
+    println!("✅ - Asset upload");
+    println!("Polling task progress...");
+    let res = result.unwrap();
+    let asset_id = res.asset_id;
+    let task_id = res.task_id;
+    let playback_id = res.playback_id;
+
+    let task_result = super::tasks::track_task_status(
+        serde_json::from_str(&format!("{}{}{}", r#"{"id":""#, task_id, r#""}"#)).unwrap(),
+        client,
+    );
+    if !task_result {
+        println!("❌ - Task failed");
+        return false;
+    }
+    println!("✅ - Task completed");
+    let playback_info = client.playback.get_playback_info(&playback_id);
+    if !playback_info.is_ok() {
+        println!("❌ - Error getting playback info");
+        return false;
+    }
+    println!("✅ - Got playback info");
+    let export_result = client.asset.export_to_ipfs(asset_id, String::from("{}"));
+    if !export_result.is_ok() {
+        println!("❌ - Error exporting to ipfs");
+        return false;
+    }
+    println!("✅ - Exported to ipfs");
+
+    return true;
 }

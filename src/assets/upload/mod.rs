@@ -32,7 +32,7 @@ pub fn upload_asset(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult>
             error!("No selection made, going back");
         }
     }
-    return result
+    return result;
 }
 
 pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
@@ -53,7 +53,7 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResu
     if let Ok(a) = up_result {
         let asset_id = Some(a["asset"]["id"].as_str().unwrap().to_string());
         let task_id = Some(a["task"]["id"].as_str().unwrap().to_string());
-        let playback_id =  Some(a["asset"]["playbackId"].as_str().unwrap().to_string());
+        let playback_id = Some(a["asset"]["playbackId"].as_str().unwrap().to_string());
         result = Some(UploadAssetResult {
             asset_id: asset_id.unwrap(),
             task_id: task_id.unwrap(),
@@ -63,7 +63,7 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResu
     } else {
         error!("Error uploading asset: {:?}", up_result);
     }
-    return result
+    return result;
 }
 
 pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResult> {
@@ -96,10 +96,14 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetRes
             error!("No selection made, going back");
         }
     }
-    return result
+    return result;
 }
 
-pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String, resumable: bool) -> Option<UploadAssetResult>{
+pub fn do_upload(
+    client: &livepeer_rs::Livepeer,
+    current_folder_string: &String,
+    resumable: bool,
+) -> Option<UploadAssetResult> {
     // read from disk recent-uploads
     let mut result = None;
     let recent_string =
@@ -210,13 +214,15 @@ pub fn do_upload(client: &livepeer_rs::Livepeer, current_folder_string: &String,
 
                             match up_result {
                                 Ok(_) => {
-                                    let asset_id = urls["asset"]["id"].as_str().unwrap().to_string();
+                                    let asset_id =
+                                        urls["asset"]["id"].as_str().unwrap().to_string();
                                     let task_id = urls["task"]["id"].as_str().unwrap().to_string();
-                                    let playback_id = urls["asset"]["playbackId"].as_str().unwrap().to_string();
-                                    result = Some(UploadAssetResult{
+                                    let playback_id =
+                                        urls["asset"]["playbackId"].as_str().unwrap().to_string();
+                                    result = Some(UploadAssetResult {
                                         asset_id,
                                         task_id,
-                                        playback_id
+                                        playback_id,
                                     });
                                     info!("Upload successful");
                                 }
@@ -261,7 +267,7 @@ pub fn list_files_and_folders(path: &String, recents: Option<String>) -> Vec<Str
 
             let extension = path.extension();
 
-            println!("Extension: {:?}", extension);
+            //println!("Extension: {:?}", extension);
             if extension.is_none() {
                 files.push(path_string.clone());
                 continue;
