@@ -11,6 +11,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
         .items(&[
             "My Assets",
             "Get Assets by User ID",
+            "Get Assets by CID",
             "Get Asset By ID or PlaybackID",
             "Upload Asset",
             "Test (Upload -> Task -> Playback -> Export to IPFS)",
@@ -54,6 +55,22 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             }
 
             if index == 2 {
+                let cid = dialoguer::Input::<String>::new()
+                    .with_prompt("Enter CID")
+                    .interact()
+                    .unwrap();
+
+                let assets_value = client.asset.get_assets_by_cid(cid, client.user.info.admin);
+
+                if let Ok(a) = assets_value {
+                    asset_list = a;
+                } else {
+                    error!("Error getting assets: {:?}", assets_value);
+                    e = Some(());
+                }
+            }
+
+            if index == 3 {
                 let asset_id = dialoguer::Input::<String>::new()
                     .with_prompt("Enter asset ID or Playback ID")
                     .interact()
@@ -81,19 +98,19 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                 assets(client);
             }
 
-            if index == 3 {
+            if index == 4 {
                 // Trigger upload function
                 upload::upload_asset(client).unwrap();
                 assets(client);
                 return false;
             }
 
-            if index == 4 {
+            if index == 5 {
                 let asset_test = test_asset_flow(client);
                 assets(client);
             }
 
-            if index == 5 {
+            if index == 6 {
                 crate::list_options(&client);
                 std::process::exit(0);
             }
@@ -127,11 +144,12 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                             .iter()
                             .map(|x| {
                                 format!(
-                                    "{} - {} - {} - {}",
+                                    "{} - {} - {} - {} - {}",
                                     x["id"].as_str().unwrap(),
                                     x["name"].as_str().unwrap().cyan().bold(),
                                     x["status"]["phase"].as_str().unwrap(),
-                                    x["status"]["updatedAt"],
+                                    x["createdAt"],
+                                    x["playbackId"].as_str().unwrap(),
                                 )
                             })
                             .collect::<Vec<String>>();

@@ -70,7 +70,7 @@ pub fn upload_from_file(client: &livepeer_rs::Livepeer) -> Option<UploadAssetRes
     let mut result = None;
     // Choose between direct and resumable upload
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Direct Upload", "Resumable Upload", "< Back"])
+        .items(&["Direct Upload", "Resumable Upload (TODO)", "< Back"])
         .default(0)
         .interact_on_opt(&crate::Term::stderr())
         .unwrap();

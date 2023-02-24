@@ -27,7 +27,7 @@ cargo run
 ```
 
 ## Features
-- List Streams, Assets, Tasks
+- List Streams, Assets, Tasks, Playbacks
 - Create Streams
 - Upload Assets
 - Get playback info
