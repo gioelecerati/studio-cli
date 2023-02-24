@@ -19,10 +19,6 @@ use env_logger::{filter::Filter, fmt::Color, Builder, Logger};
 
 fn main() {
     env_logger::init_from_env(env_logger::Env::default().filter_or("LIVEPEER_STUDIO_LOG", "warn"));
-    init();
-}
-
-pub fn init() {
     println!(
         "{}",
         r#"
@@ -35,7 +31,10 @@ pub fn init() {
     "#
         .green()
     );
+    init();
+}
 
+pub fn init() {
     let items = vec!["Prod", "Stg"];
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&items)
@@ -92,7 +91,7 @@ pub fn init() {
 
 fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-        .items(&["Users", "Streams", "Assets", "Tasks", "<- Back"])
+        .items(&["Users", "Streams", "Assets", "Tasks", "Playback", "<- Back"])
         .default(0)
         .interact_on_opt(&Term::stderr())
         .unwrap();
@@ -116,6 +115,10 @@ fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
             }
 
             if index == 4 {
+                playback::playbacks(&lvpr_client);
+            }
+
+            if index == 5 {
                 crate::init();
                 std::process::exit(0);
             }

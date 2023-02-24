@@ -1,4 +1,5 @@
 use colored::*;
+use livepeer_rs::playback::Playback;
 
 pub fn playback(playbackInfo: serde_json::Value, client: &livepeer_rs::Livepeer) {
     let mut urls = Vec::new();
@@ -47,5 +48,20 @@ pub fn playback(playbackInfo: serde_json::Value, client: &livepeer_rs::Livepeer)
             .output()
             .expect("failed to execute process");
         crate::assets::assets(client);
+    }
+}
+
+pub fn playbacks(client: &livepeer_rs::Livepeer) {
+    let playbackId = dialoguer::Input::<String>::new()
+        .with_prompt("Enter Playback ID or CID")
+        .interact()
+        .unwrap();
+    let playback_info = client.playback.get_playback_info(&String::from(playbackId));
+    if let Ok(p) = playback_info {
+        let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
+        println!("{}", pretty_playback_info);
+        crate::playback::playback(p, &client);
+    } else {
+        error!("Error getting playback info: {:?}", playback_info);
     }
 }
