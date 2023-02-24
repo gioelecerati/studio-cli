@@ -11,7 +11,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
         .items(&[
             "My Assets",
             "Get Assets by User ID",
-            "Get Asset By ID",
+            "Get Asset By ID or PlaybackID",
             "Upload Asset",
             "Test (Upload -> Task -> Playback -> Export to IPFS)",
             "< Back",
@@ -55,15 +55,22 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
 
             if index == 2 {
                 let asset_id = dialoguer::Input::<String>::new()
-                    .with_prompt("Enter asset ID")
+                    .with_prompt("Enter asset ID or Playback ID")
                     .interact()
                     .unwrap();
-                let single_asset = client.asset.get_asset_by_id(String::from(asset_id));
+                let single_asset = client.asset.get_asset_by_id(String::from(asset_id.clone()));
                 if let Ok(a) = single_asset {
                     asset = Some(a);
                 } else {
-                    error!("Error getting asset: {:?}", single_asset);
-                    e = Some(());
+                    let single_asset = client.asset.get_asset_by_playback_id(String::from(asset_id), client.user.info.admin);
+
+                    if let Ok(a) = single_asset {
+                        let a = &a.as_array().unwrap().clone()[0];
+                        asset = Some(a.clone());
+                    }else{
+                        error!("Error getting asset: {:?}", single_asset);
+                        e = Some(());
+                    }
                 }
             }
 
