@@ -35,7 +35,7 @@ fn main() {
 }
 
 pub fn init() {
-    let items = vec!["Prod", "Stg"];
+    let items = vec!["Prod", "Stg", "Dev"];
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&items)
         .with_prompt(
@@ -49,6 +49,10 @@ pub fn init() {
         Some(index) => {
             if index == 0 {
                 "prod"
+            } else if index == 1 {
+                "stg" 
+            } else if index == 2 {
+                "dev"
             } else {
                 "stg"
             }
@@ -74,6 +78,7 @@ pub fn init() {
     match lenv {
         "prod" => _lvpr_env = livepeer_rs::LivepeerEnv::Prod,
         "stg" => _lvpr_env = livepeer_rs::LivepeerEnv::Stg,
+        "dev" => _lvpr_env = livepeer_rs::LivepeerEnv::Dev,
         _ => _lvpr_env = livepeer_rs::LivepeerEnv::Stg,
     }
 
