@@ -46,17 +46,12 @@ pub fn init() {
         .unwrap();
 
     let lenv = match selection {
-        Some(index) => {
-            if index == 0 {
-                "prod"
-            } else if index == 1 {
-                "stg" 
-            } else if index == 2 {
-                "dev"
-            } else {
-                "stg"
-            }
-        }
+        Some(index) => match index {
+            0 => "prod",
+            1 => "stg",
+            2 => "dev",
+            _ => "stg",
+        },
         None => "stg",
     };
 
@@ -102,32 +97,24 @@ fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
         .unwrap();
 
     match selection {
-        Some(index) => {
-            if index == 0 {
-                users::users(&lvpr_client);
-            }
-
-            if index == 1 {
+        Some(index) => match index {
+            0 => users::users(&lvpr_client),
+            1 => {
                 live::streams(&lvpr_client);
             }
-
-            if index == 2 {
+            2 => {
                 assets::assets(&lvpr_client);
             }
-
-            if index == 3 {
-                tasks::tasks(&lvpr_client);
-            }
-
-            if index == 4 {
-                playback::playbacks(&lvpr_client);
-            }
-
-            if index == 5 {
+            3 => tasks::tasks(&lvpr_client),
+            4 => playback::playbacks(&lvpr_client),
+            5 => {
                 crate::init();
                 std::process::exit(0);
             }
-        }
+            _ => {
+                info!("No selection made");
+            }
+        },
         None => {
             info!("No selection made");
         }

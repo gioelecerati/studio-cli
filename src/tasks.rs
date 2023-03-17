@@ -160,10 +160,9 @@ pub fn tasks(client: &livepeer_rs::Livepeer) {
 
 pub fn inspect_task(task: Option<serde_json::Value>, client: &livepeer_rs::Livepeer) {
     let a = task.unwrap();
-
+    let pretty_task = serde_json::to_string_pretty(&a).unwrap();
+    println!("{}", pretty_task);
     if a["type"] != "upload" {
-        let pretty_task = serde_json::to_string_pretty(&a).unwrap();
-        println!("{}", pretty_task);
         tasks(client);
     }
 

@@ -224,86 +224,92 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
 
     match selection {
         Some(index) => {
-            if index == 0 {
-                inspect_asset(Some(a.clone()), client);
-                assets(client);
-            }
-
-            if index == 1 {
-                if let Ok(t) = task {
-                    let pretty_task = serde_json::to_string_pretty(&t).unwrap();
-                    println!("{}", pretty_task);
-                    let single_task = t[0].clone();
-                    crate::tasks::inspect_task(Some(single_task), client);
-                } else {
-                    info!("Error getting task: {:?}", task);
-                }
-            }
-
-            if index == 3 {
-                let playback_info = client
-                    .playback
-                    .get_playback_info(&String::from(a["playbackId"].as_str().unwrap()));
-                if let Ok(p) = playback_info {
-                    let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
-                    println!("{}", pretty_playback_info);
-                    crate::playback::playback(p, &client);
-                } else {
-                    error!("Error getting playback info: {:?}", playback_info);
-                }
-            }
-
-            if index == 4 {
-                let export_result = client
-                    .asset
-                    .export_to_ipfs(String::from(a["id"].as_str().unwrap()), String::from("{}"));
-                if let Ok(e) = export_result {
-                    let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
-                    println!("{}", pretty_export_result);
-                } else {
-                    error!("Error exporting to ipfs: {:?}", export_result);
-                }
-            }
-
-            if index == 5 {
-                assets(client);
-            }
-
-            if index == 6 {
-                crate::list_options(&client);
-                std::process::exit(0);
-            }
-
-            if index == 2 {
-                // run command ffplay with playbackURL
-                let playback_url = a["playbackUrl"].as_str();
-
-                let ffplay_path = crate::live::get_ffplay_path();
-
-                if ffplay_path.is_err() {
-                    error!("ffplay not found");
+            match index {
+                0 => {
+                    inspect_asset(Some(a.clone()), client);
                     assets(client);
                 }
 
-                let ffplay = ffplay_path.unwrap();
-
-                match playback_url {
-                    Some(url) => {
-                        info!("Playback URL: {}", url);
-                        info!("Playing asset...");
-                        info!("Wait for ffplay to load...");
-                        let output = std::process::Command::new(ffplay)
-                            .arg(url)
-                            .output()
-                            .expect("failed to execute process");
-                    }
-                    None => {
-                        error!("No playback URL found");
-                        assets(client);
+                1 => {
+                    if let Ok(t) = task {
+                        let pretty_task = serde_json::to_string_pretty(&t).unwrap();
+                        println!("{}", pretty_task);
+                        let single_task = t[0].clone();
+                        crate::tasks::inspect_task(Some(single_task), client);
+                    } else {
+                        info!("Error getting task: {:?}", task);
                     }
                 }
 
-                assets(client);
+                3 => {
+                    let playback_info = client
+                        .playback
+                        .get_playback_info(&String::from(a["playbackId"].as_str().unwrap()));
+                    if let Ok(p) = playback_info {
+                        let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
+                        println!("{}", pretty_playback_info);
+                        crate::playback::playback(p, &client);
+                    } else {
+                        error!("Error getting playback info: {:?}", playback_info);
+                    }
+                }
+
+                4 => {
+                    let export_result = client.asset.export_to_ipfs(
+                        String::from(a["id"].as_str().unwrap()),
+                        String::from("{}"),
+                    );
+                    if let Ok(e) = export_result {
+                        let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
+                        println!("{}", pretty_export_result);
+                    } else {
+                        error!("Error exporting to ipfs: {:?}", export_result);
+                    }
+                }
+
+                5 => {
+                    assets(client);
+                }
+
+                6 => {
+                    crate::list_options(&client);
+                    std::process::exit(0);
+                }
+
+                2 => {
+                    // run command ffplay with playbackURL
+                    let playback_url = a["playbackUrl"].as_str();
+
+                    let ffplay_path = crate::live::get_ffplay_path();
+
+                    if ffplay_path.is_err() {
+                        error!("ffplay not found");
+                        assets(client);
+                    }
+
+                    let ffplay = ffplay_path.unwrap();
+
+                    match playback_url {
+                        Some(url) => {
+                            info!("Playback URL: {}", url);
+                            info!("Playing asset...");
+                            info!("Wait for ffplay to load...");
+                            let output = std::process::Command::new(ffplay)
+                                .arg(url)
+                                .output()
+                                .expect("failed to execute process");
+                        }
+                        None => {
+                            error!("No playback URL found");
+                            assets(client);
+                        }
+                    }
+
+                    assets(client);
+                }
+                _ => {
+                    error!("No selection made");
+                }
             }
         }
         None => {
