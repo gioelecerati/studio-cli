@@ -6,6 +6,15 @@ use livepeer_rs::{
 
 pub mod upload;
 
+fn truncate_and_pad(s: &str, max_width: usize, min_width: usize) -> String {
+    let truncated = if s.len() > max_width {
+        s.chars().take(max_width).collect::<String>()
+    } else {
+        s.to_string()
+    };
+    format!("{:<width$}   ", truncated, width = min_width)
+}
+
 pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&[
@@ -139,29 +148,31 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                     }
 
                     if index == 1 {
-                        // selection from list by id
+                        
                         let ids = list
                             .iter()
                             .map(|x| {
                                 format!(
-                                    "{} - {} - {} - {} - {}",
-                                    x["id"].as_str().unwrap(),
-                                    x["name"].as_str().unwrap().cyan().bold(),
-                                    x["status"]["phase"].as_str().unwrap(),
-                                    x["createdAt"],
-                                    x["playbackId"].as_str().unwrap(),
+                                    "{id} - {name} - {phase} - {created_at} - {playback_id}",
+                                    id = x["id"].as_str().unwrap(),
+                                    name = truncate_and_pad(
+                                        &format!("{}", x["name"].as_str().unwrap().cyan().bold()),
+                                        40,
+                                        40
+                                    ),
+                                    phase = truncate_and_pad(x["status"]["phase"].as_str().unwrap(), 10, 10).white().bold(),
+                                    created_at = x["createdAt"].as_str().unwrap_or("").white().bold(),
+                                    playback_id = x["playbackId"].as_str().unwrap_or("").white().bold(),
                                 )
                             })
                             .collect::<Vec<String>>();
-
-                        let selection = dialoguer::Select::with_theme(
-                            &dialoguer::theme::ColorfulTheme::default(),
-                        )
-                        .items(&ids)
-                        .default(0)
-                        .interact_on_opt(&crate::Term::stderr())
-                        .unwrap();
-
+                        
+                        let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
+                            .items(&ids)
+                            .default(0)
+                            .interact_on_opt(&crate::Term::stderr())
+                            .unwrap();
+                        
                         match selection {
                             Some(index) => {
                                 let id = list[index]["id"].as_str().unwrap();
