@@ -148,7 +148,6 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                     }
 
                     if index == 1 {
-                        
                         let ids = list
                             .iter()
                             .map(|x| {
@@ -160,19 +159,29 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                                         40,
                                         40
                                     ),
-                                    phase = truncate_and_pad(x["status"]["phase"].as_str().unwrap(), 10, 10).white().bold(),
-                                    created_at = x["createdAt"].as_str().unwrap_or("").white().bold(),
-                                    playback_id = x["playbackId"].as_str().unwrap_or("").white().bold(),
+                                    phase = truncate_and_pad(
+                                        x["status"]["phase"].as_str().unwrap(),
+                                        10,
+                                        10
+                                    )
+                                    .white()
+                                    .bold(),
+                                    created_at =
+                                        x["createdAt"].as_str().unwrap_or("").white().bold(),
+                                    playback_id =
+                                        x["playbackId"].as_str().unwrap_or("").white().bold(),
                                 )
                             })
                             .collect::<Vec<String>>();
-                        
-                        let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-                            .items(&ids)
-                            .default(0)
-                            .interact_on_opt(&crate::Term::stderr())
-                            .unwrap();
-                        
+
+                        let selection = dialoguer::Select::with_theme(
+                            &dialoguer::theme::ColorfulTheme::default(),
+                        )
+                        .items(&ids)
+                        .default(0)
+                        .interact_on_opt(&crate::Term::stderr())
+                        .unwrap();
+
                         match selection {
                             Some(index) => {
                                 let id = list[index]["id"].as_str().unwrap();
