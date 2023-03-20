@@ -28,7 +28,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
             let mut e: Option<_> = None;
 
             if index == 0 {
-                let assets_value = client.asset.list_assets();
+                let assets_value = client.asset.list_paginated_assets(10000, 0, true);
 
                 if let Ok(a) = assets_value {
                     asset_list = a;
