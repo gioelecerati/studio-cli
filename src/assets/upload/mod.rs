@@ -48,7 +48,9 @@ pub fn upload_from_url(client: &livepeer_rs::Livepeer) -> Option<UploadAssetResu
         .interact()
         .unwrap();
 
-    let up_result = client.asset.import_asset(url, asset_name);
+    let playback_policy = crate::accesscontrol::generate_playback_policy(&client);
+
+    let up_result = client.asset.import_asset(url, asset_name, playback_policy);
 
     if let Ok(a) = up_result {
         let asset_id = Some(a["asset"]["id"].as_str().unwrap().to_string());

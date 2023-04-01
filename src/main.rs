@@ -8,6 +8,7 @@ extern crate log;
 use colored::*;
 use console::Term;
 
+pub mod accesscontrol;
 pub mod assets;
 pub mod auth;
 pub mod live;

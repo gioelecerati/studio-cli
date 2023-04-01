@@ -1,3 +1,4 @@
+use chrono::{DateTime, NaiveDateTime, Utc};
 use colored::*;
 use livepeer_rs::{
     playback::Playback,
@@ -151,6 +152,19 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                         let ids = list
                             .iter()
                             .map(|x| {
+                                let created_at = x["createdAt"].as_str().unwrap_or("");
+
+                                let created_at_formatted = if !created_at.is_empty() {
+                                    let timestamp = created_at.parse::<i64>().unwrap();
+                                    let naive_datetime =
+                                        NaiveDateTime::from_timestamp(timestamp, 0);
+                                    let datetime: DateTime<Utc> =
+                                        DateTime::from_utc(naive_datetime, Utc);
+                                    datetime.to_rfc3339()
+                                } else {
+                                    String::from("")
+                                };
+
                                 format!(
                                     "{id} - {name} - {phase} - {created_at} - {playback_id}",
                                     id = x["id"].as_str().unwrap(),
@@ -166,8 +180,7 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                                     )
                                     .white()
                                     .bold(),
-                                    created_at =
-                                        x["createdAt"].as_str().unwrap_or("").white().bold(),
+                                    created_at = created_at_formatted.white().bold(),
                                     playback_id =
                                         x["playbackId"].as_str().unwrap_or("").white().bold(),
                                 )
