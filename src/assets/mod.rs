@@ -247,6 +247,8 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
             "Get originating task",
             "Playback Asset",
             "Get playback info",
+            "Open in lvpr.tv (Webrtc)",
+            "Open in lvpr.tv (HLS)",
             "Export to IPFS",
             "< Back",
             "< Home",
@@ -258,12 +260,12 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
     match selection {
         Some(index) => {
             match index {
-                0 => {
+                0 => { // Retrieve again
                     inspect_asset(Some(a.clone()), client);
                     assets(client);
                 }
 
-                1 => {
+                1 => { // Get originating task
                     if let Ok(t) = task {
                         let pretty_task = serde_json::to_string_pretty(&t).unwrap();
                         println!("{}", pretty_task);
@@ -274,42 +276,7 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
                     }
                 }
 
-                3 => {
-                    let playback_info = client
-                        .playback
-                        .get_playback_info(&String::from(a["playbackId"].as_str().unwrap()));
-                    if let Ok(p) = playback_info {
-                        let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
-                        println!("{}", pretty_playback_info);
-                        crate::playback::playback(p, &client);
-                    } else {
-                        error!("Error getting playback info: {:?}", playback_info);
-                    }
-                }
-
-                4 => {
-                    let export_result = client.asset.export_to_ipfs(
-                        String::from(a["id"].as_str().unwrap()),
-                        String::from("{}"),
-                    );
-                    if let Ok(e) = export_result {
-                        let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
-                        println!("{}", pretty_export_result);
-                    } else {
-                        error!("Error exporting to ipfs: {:?}", export_result);
-                    }
-                }
-
-                5 => {
-                    assets(client);
-                }
-
-                6 => {
-                    crate::list_options(&client);
-                    std::process::exit(0);
-                }
-
-                2 => {
+                2 => { // Playback asset
                     // run command ffplay with playbackURL
                     let playback_url = a["playbackUrl"].as_str();
 
@@ -340,6 +307,54 @@ pub fn inspect_asset(asset: Option<serde_json::Value>, client: &livepeer_rs::Liv
 
                     assets(client);
                 }
+
+                3 => { // Get Playback info
+                    let playback_info = client
+                        .playback
+                        .get_playback_info(&String::from(a["playbackId"].as_str().unwrap()));
+                    if let Ok(p) = playback_info {
+                        let pretty_playback_info = serde_json::to_string_pretty(&p).unwrap();
+                        println!("{}", pretty_playback_info);
+                        crate::playback::playback(p, &client);
+                    } else {
+                        error!("Error getting playback info: {:?}", playback_info);
+                    }
+                }
+
+                4 => { // Open in lvpr.tv (WebRtc)
+                    let playback_id = a["playbackId"].as_str().unwrap();
+                    let url = format!("https://lvpr.tv?v={}", playback_id);
+                    let _ = open::that(&url);
+                }
+
+                5 => {
+                    let playback_id = a["playbackId"].as_str().unwrap();
+                    let url = format!("https://lvpr.tv?v={}&lowLatency=false", playback_id);
+                    let _ = open::that(&url);
+                }
+
+                6 => { // Export to IPFS
+                    let export_result = client.asset.export_to_ipfs(
+                        String::from(a["id"].as_str().unwrap()),
+                        String::from("{}"),
+                    );
+                    if let Ok(e) = export_result {
+                        let pretty_export_result = serde_json::to_string_pretty(&e).unwrap();
+                        println!("{}", pretty_export_result);
+                    } else {
+                        error!("Error exporting to ipfs: {:?}", export_result);
+                    }
+                }
+
+                7 => { 
+                    assets(client);
+                }
+
+                8 => {
+                    crate::list_options(&client);
+                    std::process::exit(0);
+                }
+
                 _ => {
                     error!("No selection made");
                 }

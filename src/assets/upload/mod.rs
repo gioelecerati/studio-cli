@@ -171,9 +171,11 @@ pub fn do_upload(
                         asset_name = nanoid::nanoid!(10);
                     }
 
+                    let playback_policy = crate::accesscontrol::generate_playback_policy(&client);
+
                     info!("Generating presigned urls");
 
-                    let urls = client.asset.get_presigned_url(asset_name);
+                    let urls = client.asset.get_presigned_url(asset_name, playback_policy);
 
                     match urls {
                         Ok(urls) => {

@@ -12,7 +12,7 @@ pub fn generate_playback_policy(client: &livepeer_rs::Livepeer) -> Option<serde_
     if select_playback_policy == 1 {
         let mut select_playback_policy =
             dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
-                .items(&["Webhook"])
+                .items(&["Webhook", "Jwt"])
                 .default(0)
                 .interact()
                 .unwrap();
@@ -54,9 +54,15 @@ pub fn generate_playback_policy(client: &livepeer_rs::Livepeer) -> Option<serde_
             playback_policy = Some(serde_json::json!({
                 "type": "webhook",
                 "webhookId": list[select_webhook]["id"].as_str().unwrap_or(""),
-                "webhook_context": {
+                "webhookContext": {
 
                 }
+            }));
+
+            println!("{:?}", playback_policy);
+        } else if select_playback_policy == 1 {
+            playback_policy = Some(serde_json::json!({
+                "type": "jwt",
             }));
         }
     }

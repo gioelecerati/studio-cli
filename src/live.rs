@@ -9,6 +9,7 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
             "My Streams",
             "Get Streams by User ID",
             "Get Stream By ID",
+            "Get Stream by Playback ID",
             "Create Stream",
             "< Back",
         ])
@@ -73,11 +74,32 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
             }
 
             if index == 3 {
+                let playback_id = dialoguer::Input::<String>::new()
+                    .with_prompt("Enter playback ID")
+                    .interact()
+                    .unwrap();
+                let single_stream = client
+                    .stream
+                    .clone()
+                    .get_stream_by_playback_id(String::from(playback_id), client.user.info.admin);
+
+                if let Ok(a) = single_stream {
+                    let a = &a.as_array().unwrap().clone()[0];
+                    stream = Some(a.clone());
+                } else {
+                    error!("Error getting asset: {:?}", single_stream);
+                    e = Some(());
+                }
+            }
+
+            if index == 4 {
                 // Create stream
                 let name = dialoguer::Input::<String>::new()
                     .with_prompt("Enter stream name")
                     .interact()
                     .unwrap();
+
+                let playback_policy = crate::accesscontrol::generate_playback_policy(&client);
 
                 client.stream.clone().create_stream(
                     &name,
@@ -89,6 +111,7 @@ pub fn streams(client: &livepeer_rs::Livepeer) -> bool {
                         width: 426,
                         gop: None,
                     }],
+                    playback_policy,
                 );
 
                 streams(client);
@@ -204,6 +227,8 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
             "Test Push into Region",
             "Get running push",
             "Test on all regions",
+            "Open with lvpr.tv (WebRtc)",
+            "Open with lvpr.tv (HLS)",
         ])
         .default(0)
         .interact_on_opt(&crate::Term::stderr())
@@ -384,6 +409,18 @@ pub fn inspect_stream(stream: Option<serde_json::Value>, client: &livepeer_rs::L
                 }
 
                 streams(client);
+            }
+            
+            if index == 8 {
+                let playback_id = a["playbackId"].as_str().unwrap();
+                let url = format!("https://lvpr.tv?v={}", playback_id);
+                let _ = open::that(&url);
+            }
+
+            if index == 9 {
+                let playback_id = a["playbackId"].as_str().unwrap();
+                let url = format!("https://lvpr.tv?v={}&lowLatency=false", playback_id);
+                let _ = open::that(&url);
             }
         }
         None => {
