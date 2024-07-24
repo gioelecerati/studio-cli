@@ -94,8 +94,14 @@ pub fn assets(client: &livepeer_rs::Livepeer) -> bool {
                         .get_asset_by_playback_id(String::from(asset_id), client.user.info.admin);
 
                     if let Ok(a) = single_asset {
-                        let a = &a.as_array().unwrap().clone()[0];
-                        asset = Some(a.clone());
+                        let array = a.as_array().unwrap();
+                        if !array.is_empty() {
+                            let a = &array[0];
+                            asset = Some(a.clone());
+                        } else {
+                            error!("Error: No asset found");
+                            e = Some(());
+                        }
                     } else {
                         error!("Error getting asset: {:?}", single_asset);
                         e = Some(());
