@@ -1260,7 +1260,7 @@ checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 [[package]]
 name = "livepeer-rs"
 version = "0.0.1"
-source = "git+https://github.com/gioelecerati/livepeer-rust-client#015bb7a8a738ad33dbaad6b0b0aa0b3341f2c008"
+source = "git+https://github.com/gioelecerati/livepeer-rust-client#fccb015f9d3147eec27e554e00a38057294e0af2"
 dependencies = [
  "async-std",
  "colored",

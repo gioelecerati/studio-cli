@@ -36,7 +36,7 @@ fn main() {
 }
 
 pub fn init() {
-    let items = vec!["Prod", "Stg", "Dev"];
+    let items = vec!["Prod", "Stg", "Dev", "Box"];
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&items)
         .with_prompt(
@@ -51,6 +51,7 @@ pub fn init() {
             0 => "prod",
             1 => "stg",
             2 => "dev",
+            3 => "box",
             _ => "stg",
         },
         None => "stg",
@@ -67,6 +68,7 @@ pub fn init() {
         "prod" => livepeer_rs::LivepeerEnv::Prod,
         "stg" => livepeer_rs::LivepeerEnv::Stg,
         "dev" => livepeer_rs::LivepeerEnv::Dev,
+        "box" => livepeer_rs::LivepeerEnv::Box,
         _ => livepeer_rs::LivepeerEnv::Stg,
     };
 
