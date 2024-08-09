@@ -15,6 +15,7 @@ pub mod live;
 pub mod playback;
 pub mod tasks;
 pub mod users;
+pub mod ai;
 
 use env_logger::{filter::Filter, fmt::Color, Builder, Logger};
 
@@ -83,7 +84,7 @@ pub fn init() {
 }
 
 fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
-    let options = ["Users", "Streams", "Assets", "Tasks", "Playback", "<- Back"];
+    let options = ["Users", "Streams", "Assets", "Tasks", "Playback", "AI", "<- Back"];
     let selection = dialoguer::Select::with_theme(&dialoguer::theme::ColorfulTheme::default())
         .items(&options)
         .default(0)
@@ -97,7 +98,8 @@ fn list_options(lvpr_client: &livepeer_rs::Livepeer) {
             2 => { assets::assets(&lvpr_client); }
             3 => { tasks::tasks(&lvpr_client); }
             4 => playback::playbacks(&lvpr_client),
-            5 => {
+            5 => ai::generate(&lvpr_client),
+            6 => {
                 crate::init();
                 std::process::exit(0);
             }
